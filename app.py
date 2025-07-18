@@ -6,236 +6,164 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import accuracy_score, f1_score
-import matplotlib.pyplot as plt
-import seaborn as sns
-import shap
+import plotly.express as px
 
 # --- Page Configuration ---
 st.set_page_config(page_title="AI/ML Salary Predictor", layout="wide")
 
-# --- Custom Dark Theme ---
-st.markdown("""
-<style>
-body {
-    margin: 0;
-    overflow: hidden;
-}
-.stApp {
-    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
-    height: 100vh;
-    overflow: hidden;
-    color: white;
-    position: relative;
-}
-.stars {
-    width: 1.1px;
-    height: 1.7px;
-    background: transparent;
-    box-shadow: 
-    100px 200px white, 150px 300px white, 200px 400px white, 250px 500px white,
-    300px 600px white, 350px 700px white, 400px 800px white, 450px 900px white,
-    500px 1000px white, 550px 1100px white, 600px 1200px white, 650px 1300px white,
-    700px 1400px white, 750px 1500px white, 800px 1600px white, 850px 1700px white,
-    900px 1800px white, 950px 1900px white, 1000px 2000px white, 1050px 2100px white;
-    animation: animateStars 50s linear infinite;
-    position: absolute;
-}
-@keyframes animateStars {
-    from {transform: translateY(0);}
-    to {transform: translateY(-2000px);}
-}
-.main .block-container {
-    max-width: 1100px;
-    margin: auto;
-}
-</style>
-<div class="stars"></div>
-""", unsafe_allow_html=True)
+# --- Data Loading and Preprocessing with Caching ---
+@st.cache_data
+def load_and_clean_data(uploaded_file):
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file)
+    else:
+        df = pd.read_csv("adult3.csv")
+    df.replace("?", np.nan, inplace=True)
+    df.dropna(inplace=True)
+    return df
+
+@st.cache_resource
+def encode_and_train_models(df):
+    label_encoders = {}
+    df_encoded = df.copy()
+    for col in df_encoded.select_dtypes(include="object").columns:
+        le = LabelEncoder()
+        df_encoded[col] = le.fit_transform(df_encoded[col])
+        label_encoders[col] = le
+    X = df_encoded.drop("income", axis=1)
+    y = df_encoded["income"]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    models = {
+        "Logistic Regression": LogisticRegression(max_iter=1000),
+        "Random Forest": RandomForestClassifier(),
+        "Gradient Boosting": GradientBoostingClassifier()
+    }
+    results = []
+    model_dict = {}
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        acc = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+        results.append({"Model": name, "Accuracy": acc, "F1 Score": f1})
+        model_dict[name] = model
+    results_df = pd.DataFrame(results)
+    return label_encoders, X, model_dict, results_df, df_encoded
 
 # --- Introduction ---
 st.title("AI/ML Employee Salary Prediction App")
 st.markdown("""
-This application uses machine learning models to predict whether a person's salary is likely to be more than $50,000/year 
-based on their demographic and employment-related features. It includes performance comparisons and feature importance visualizations.
+This application predicts if a person's salary is above $50,000/year, featuring robust visualizations, feature explainers, and improved usability.
 """)
 
-def center_plot(fig, max_width="1000px"):
-    st.markdown(
-        f"""<div style="display: flex; justify-content: center; align-items: center; width: 100%;">
-            <div style="max-width: {max_width}; width: 100%;">""",
-        unsafe_allow_html=True,
-    )
-    st.pyplot(fig)
-    st.markdown("</div></div>", unsafe_allow_html=True)
+# --- Data Dictionary Modal ---
+with st.expander("ℹ️ Data Dictionary (Click to expand)", expanded=False):
+    st.markdown("""
+    | Feature Name       | Description                                               |
+    |--------------------|-----------------------------------------------------------|
+    | age                | Age of the individual                                    |
+    | workclass          | Type of employer (e.g., Private, Self-emp, Govt)         |
+    | education          | Highest educational attainment                           |
+    | occupation         | Occupation (job role)                                    |
+    | relationship       | Relationship or family status                            |
+    | hours-per-week     | Work hours per week                                      |
+    | native-country     | Country of origin                                        |
+    | gender             | Gender (Male/Female/Other)                               |
+    | income             | Target: Salary (<=50K or >50K)                           |
+    """)
 
 # --- File Upload or Default Dataset ---
 uploaded_file = st.file_uploader("Upload your dataset (CSV format)", type="csv")
+df = load_and_clean_data(uploaded_file)
 if uploaded_file:
-    df = pd.read_csv(uploaded_file)
     st.info("Using uploaded file.")
 else:
-    df = pd.read_csv("adult3.csv")
-    st.info("No file uploaded. Using default dataset (adult3.csv).")
+    st.info("Using default dataset (adult3.csv).")
 
-# --- Preprocessing ---
+# --- Data Preview ---
 st.subheader("Preview of Data")
 st.dataframe(df.head())
 
-df.replace("?", np.nan, inplace=True)
-df.dropna(inplace=True)
+# --- Encode and Train Models (Cached) ---
+label_encoders, X, model_dict, results_df, df_encoded = encode_and_train_models(df)
 
-label_encoders = {}
-for col in df.select_dtypes(include="object").columns:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col])
-    label_encoders[col] = le
+def validate_user_input(age, hours):
+    errors = []
+    if age < 18 or age > 70:
+        errors.append("Age must be between 18 and 70.")
+    if hours < 1 or hours > 99:
+        errors.append("Hours-per-week must be between 1 and 99.")
+    return errors
 
-X = df.drop("income", axis=1)
-y = df["income"]
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# --- Train Models ---
-models = {
-    "Logistic Regression": LogisticRegression(max_iter=1000),
-    "Random Forest": RandomForestClassifier(),
-    "Gradient Boosting": GradientBoostingClassifier()
-}
-results = []
-for name, model in models.items():
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred)
-    results.append({"Model": name, "Accuracy": acc, "F1 Score": f1})
-
-results_df = pd.DataFrame(results)
-
-# --- Model Accuracy Barplot ---
+# --- Model Performance Plots (Interactive) ---
 st.subheader("Model Performance Comparison")
+tab1, tab2 = st.tabs(["Accuracy", "F1 Score"])
+with tab1:
+    fig1 = px.bar(results_df, x="Model", y="Accuracy", color="Model", text="Accuracy",
+                  labels={"Accuracy": "Accuracy Score"}, title="Accuracy by Model")
+    st.plotly_chart(fig1, use_container_width=True)
+    st.caption("Hover for exact accuracy. Higher is better.")
 
-col1, col2 = st.columns(2)
+with tab2:
+    fig2 = px.bar(results_df, x="Model", y="F1 Score", color="Model", text="F1 Score",
+                  labels={"F1 Score": "F1 Score"}, title="F1 Score by Model")
+    st.plotly_chart(fig2, use_container_width=True)
+    st.caption("Hover for exact F1 score. Higher balances precision and recall.")
 
-with col1:
-    fig1, ax1 = plt.subplots(figsize=(5, 3.5))
-    sns.barplot(x="Model", y="Accuracy", data=results_df, ax=ax1, palette="plasma")
-    ax1.set_ylim(0, 1)
-    ax1.set_title("Accuracy by Model")
-    st.pyplot(fig1)
-    st.markdown(
-        "This bar graph compares the prediction accuracy of different machine learning models. "
-        "A higher accuracy indicates better overall performance in predicting whether an individual earns above or below $50,000."
-    )
+# --- Graph Display Toggles ---
+st.subheader("Explore Additional Visualizations")
+show_age = st.checkbox("Show Income by Age (Boxplot)", value=True)
+show_country = st.checkbox("Show Avg. Income by Country", value=False)
+show_occupation = st.checkbox("Show Top Paying Occupations", value=False)
+show_dist = st.checkbox("Show Income Class Distribution", value=True)
 
-with col2:
-    fig2, ax2 = plt.subplots(figsize=(5, 3.5))
-    sns.barplot(x="Model", y="F1 Score", data=results_df, ax=ax2, palette="crest")
-    ax2.set_ylim(0, 1)
-    ax2.set_title("F1 Score by Model")
-    st.pyplot(fig2)
-    st.markdown(
-        "F1 Score considers both precision and recall, making it useful for evaluating imbalanced datasets. "
-        "This chart highlights which model best balances false positives and false negatives."
-    )
-
-
-# --- Age vs Income ---
-if 'age' in df.columns:
-    st.subheader("Income by Age")
-    df_age = df.copy()
-    df_age['income'] = label_encoders['income'].inverse_transform(df['income'])
-    fig_age, ax_age = plt.subplots(figsize=(5.5, 3.5))
-    sns.boxplot(x='income', y='age', data=df_age, ax=ax_age, palette="Set2")
-    ax_age.set_title("Income vs Age")
-    st.markdown(
-    "This boxplot shows the age distribution for individuals earning above and below $50,000. "
-    "Typically, higher earners fall in older age brackets, suggesting experience may play a role in income."
-)
-    center_plot(fig_age)
+# --- Age vs Income Interactive Boxplot ---
+if show_age and 'age' in df_encoded.columns:
+    df_age = df_encoded.copy()
+    df_age['income'] = label_encoders['income'].inverse_transform(df_encoded['income'])
+    fig_age = px.box(df_age, x='income', y='age', points="all",
+                     color='income',
+                     labels={"income": "Income Class", "age": "Age"},
+                     title="Income vs Age")
+    st.plotly_chart(fig_age, use_container_width=True)
+    st.caption("Younger groups are mostly below $50K. Hover for details.")
 
 # --- Country vs Income ---
-if 'native-country' in df.columns:
-    st.subheader("Average Income by Country")
-    df_country = df.copy()
-    df_country['native-country'] = label_encoders['native-country'].inverse_transform(df['native-country'])
+if show_country and 'native-country' in df_encoded.columns:
+    df_country = df_encoded.copy()
+    df_country['native-country'] = label_encoders['native-country'].inverse_transform(df_encoded['native-country'])
     country_income = df_country.groupby('native-country')['income'].mean().sort_values(ascending=False)
-    fig_country, ax_country = plt.subplots(figsize=(8.5, 3.5))
-    country_income.plot(kind='bar', ax=ax_country, color='teal')
-    ax_country.set_ylabel("Avg. Income (Encoded)")
-    ax_country.set_title("Average Income by Country")
-    st.markdown(
-    "This bar chart displays the average encoded income class for each country in the dataset. "
-    "Higher values suggest a greater proportion of individuals earning above $50,000 from that country."
-)
-    center_plot(fig_country)
+    fig_country = px.bar(country_income,
+                        orientation="v",
+                        labels={"value": "Avg. Encoded Income", "index": "Country"},
+                        title="Average Income by Country")
+    st.plotly_chart(fig_country, use_container_width=True)
+    st.caption("Higher values mean a greater proportion of higher earners from that country.")
 
 # --- Occupation vs Income ---
-if 'occupation' in df.columns:
-    st.subheader("Top Paying Occupations")
-    df_occ = df.copy()
-    df_occ['occupation'] = label_encoders['occupation'].inverse_transform(df['occupation'])
+if show_occupation and 'occupation' in df_encoded.columns:
+    df_occ = df_encoded.copy()
+    df_occ['occupation'] = label_encoders['occupation'].inverse_transform(df_encoded['occupation'])
     occ_income = df_occ.groupby('occupation')['income'].mean().sort_values(ascending=False)
-    fig_occ, ax_occ = plt.subplots(figsize=(6.5, 4.5))
-    sns.barplot(x=occ_income.values, y=occ_income.index, ax=ax_occ, palette="coolwarm")
-    ax_occ.set_title("Avg. Income by Occupation")
-    st.markdown("This horizontal bar graph highlights the average income levels by occupation. It reveals which job roles are associated with higher income classes, with roles like 'Exec-managerial' or 'Prof-specialty' often ranking higher.")
-    center_plot(fig_occ)
-
-# --- Feature Importance ---
-st.subheader("Feature Importance (Random Forest)")
-rf_model = models["Random Forest"]
-importances = pd.Series(rf_model.feature_importances_, index=X.columns).sort_values()
-fig_imp, ax_imp = plt.subplots(figsize=(6.5, 4.5))
-importances.plot(kind='barh', ax=ax_imp, color="skyblue")
-ax_imp.set_title("Feature Importance")
-st.markdown(
-    "This horizontal bar graph highlights the average income levels by occupation. "
-    "It reveals which job roles are associated with higher income classes, with roles like 'Exec-managerial' or 'Prof-specialty' often ranking higher."
-)
-center_plot(fig_imp)
+    fig_occ = px.bar(occ_income,
+                    orientation="h",
+                    labels={"value": "Avg. Encoded Income", "index": "Occupation"},
+                    title="Average Income by Occupation")
+    st.plotly_chart(fig_occ, use_container_width=True)
+    st.caption("Top jobs by income. Hover for details.")
 
 # --- Income Class Distribution ---
-st.subheader("Income Class Distribution")
-income_counts = df['income'].value_counts(normalize=True) * 100
-income_labels = label_encoders['income'].inverse_transform(income_counts.index)
-fig_income, ax_income = plt.subplots(figsize=(6, 2.5))
-sns.barplot(x=income_counts.values, y=income_labels, palette='viridis', ax=ax_income)
-for i, v in enumerate(income_counts.values):
-    ax_income.text(v + 1, i, f"{v:.1f}%", va='center', fontweight='bold')
-ax_income.set_xlabel("Percentage")
-ax_income.set_xlim(0, 100)
-ax_income.set_title("Proportion of Income Classes")
-st.markdown("""
-This bar chart shows the distribution of income classes in the dataset.
-- The '>50K' class represents individuals earning above $50,000.
-- The '<=50K' class represents individuals earning $50,000 or less.
-- The chart shows the percentage of each income class in the dataset.
-""")
-center_plot(fig_income)
+if show_dist:
+    income_counts = df_encoded['income'].value_counts(normalize=True) * 100
+    income_labels = label_encoders['income'].inverse_transform(income_counts.index)
+    fig_income = px.bar(x=income_labels, y=income_counts.values, text=income_counts.round(1),
+                        labels={"x": "Income Class", "y": "Percentage"},
+                        title="Proportion of Income Classes")
+    st.plotly_chart(fig_income, use_container_width=True)
+    st.caption("Shows class balance. Hover for precise percentages.")
 
-# --- Correlation Heatmap ---
-st.subheader("Feature Correlation Heatmap")
-st.markdown("""
-**What This Shows:**
 
-This heatmap displays the correlation between different numerical features in the dataset.
-
-- A correlation value ranges from **-1 to +1**.
-- A value **close to +1** means a **strong positive relationship** — as one feature increases, so does the other.
-- A value **close to -1** indicates a **strong negative relationship** — as one feature increases, the other decreases.
-- Values near **0** suggest **little to no linear relationship** between the two features.
-
-**How This Helps:**
-
-By examining this matrix, we can:
-- Identify features that may be redundant (highly correlated with each other).
-- Understand relationships, such as whether working more hours per week correlates with higher income.
-- Make informed decisions about feature selection or dimensionality reduction.
-""")
-fig_corr, ax_corr = plt.subplots(figsize=(10,6))
-sns.heatmap(df.corr(), cmap="coolwarm", ax=ax_corr)
-center_plot(fig_corr)
-
-# --- User Input Form ---
+# --- User Input Form, With Validation ---
 st.subheader("Try It Yourself: Salary Prediction")
 with st.form("prediction_form"):
     name = st.text_input("Your Name")
@@ -247,32 +175,40 @@ with st.form("prediction_form"):
     country = st.selectbox("Country", label_encoders['native-country'].classes_)
     workclass = st.selectbox("Workclass", label_encoders['workclass'].classes_)
     gender = st.selectbox("Gender", label_encoders['gender'].classes_)
+    model_choice = st.selectbox("Choose Model", ["Random Forest", "Logistic Regression", "Gradient Boosting"])
     submit = st.form_submit_button("Predict My Income")
 
     if submit:
-        try:
-            input_data = {
-                'age': age,
-                'education': label_encoders['education'].transform([education])[0],
-                'occupation': label_encoders['occupation'].transform([occupation])[0],
-                'relationship': label_encoders['relationship'].transform([relationship])[0],
-                'hours-per-week': hours,
-                'native-country': label_encoders['native-country'].transform([country])[0],
-                'workclass': label_encoders['workclass'].transform([workclass])[0],
-                'gender': label_encoders['gender'].transform([gender])[0],
-            }
-            for col in X.columns:
-                if col not in input_data:
-                    input_data[col] = X[col].mean()
+        # --- Input Validation ---
+        errors = validate_user_input(age, hours)
+        if errors:
+            for err in errors:
+                st.error(err)
+        else:
+            try:
+                input_data = {
+                    'age': age,
+                    'education': label_encoders['education'].transform([education])[0],
+                    'occupation': label_encoders['occupation'].transform([occupation])[0],
+                    'relationship': label_encoders['relationship'].transform([relationship])[0],
+                    'hours-per-week': hours,
+                    'native-country': label_encoders['native-country'].transform([country])[0],
+                    'workclass': label_encoders['workclass'].transform([workclass])[0],
+                    'gender': label_encoders['gender'].transform([gender])[0],
+                }
+                for col in X.columns:
+                    if col not in input_data:
+                        input_data[col] = X[col].mean()
 
-            input_df = pd.DataFrame([input_data])[X.columns]
-            prediction = rf_model.predict(input_df)[0]
-            label = label_encoders['income'].inverse_transform([prediction])[0]
-            st.success(f"{name}, your predicted income range is: {label}")
-        except Exception as e:
-            st.error(f"Prediction failed: {e}")
+                input_df = pd.DataFrame([input_data])[X.columns]
+                model = model_dict[model_choice]
+                prediction = model.predict(input_df)[0]
+                label = label_encoders['income'].inverse_transform([prediction])[0]
+                st.success(f"{name}, your predicted income range is: {label}")
+                st.info(f"You used the {model_choice} model.")
+            except Exception as e:
+                st.error(f"Prediction failed: {e}")
 
-    st.success("Done! You can explore more or upload another dataset.")
 # --- Footer ---
 st.markdown("""
 <hr style="border: 0.5px solid gray; margin-top: 30px;" />
@@ -280,4 +216,3 @@ st.markdown("""
     Salary Prediction Using AI/ML &nbsp; &#169;
 </div>
 """, unsafe_allow_html=True)
-
