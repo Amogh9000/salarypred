@@ -162,7 +162,6 @@ if show_dist:
     st.plotly_chart(fig_income, use_container_width=True)
     st.caption("Shows class balance. Hover for precise percentages.")
 
-
 # --- User Input Form, With Validation ---
 st.subheader("Try It Yourself: Salary Prediction")
 with st.form("prediction_form"):
@@ -186,24 +185,35 @@ with st.form("prediction_form"):
                 st.error(err)
         else:
             try:
-                input_data = {
-                    'age': age,
-                    'education': label_encoders['education'].transform([education])[0],
-                    'occupation': label_encoders['occupation'].transform([occupation])[0],
-                    'relationship': label_encoders['relationship'].transform([relationship])[0],
-                    'hours-per-week': hours,
-                    'native-country': label_encoders['native-country'].transform([country])[0],
-                    'workclass': label_encoders['workclass'].transform([workclass])[0],
-                    'gender': label_encoders['gender'].transform([gender])[0],
-                }
+                # Build the input features dictionary
+                input_data = {}
+                input_data['age'] = age
+                input_data['education'] = label_encoders['education'].transform([education])[0]
+                input_data['occupation'] = label_encoders['occupation'].transform([occupation])[0]
+                input_data['relationship'] = label_encoders['relationship'].transform([relationship])[0]
+                input_data['hours-per-week'] = hours
+                input_data['native-country'] = label_encoders['native-country'].transform([country])[0]
+                input_data['workclass'] = label_encoders['workclass'].transform([workclass])[0]
+                input_data['gender'] = label_encoders['gender'].transform([gender])[0]
+
+                # Fill any missing columns with means (typically not needed here, but for robustness)
                 for col in X.columns:
                     if col not in input_data:
                         input_data[col] = X[col].mean()
 
+                # Ensure input order is the same as model training
                 input_df = pd.DataFrame([input_data])[X.columns]
+
+                # Prediction
                 model = model_dict[model_choice]
                 prediction = model.predict(input_df)[0]
                 label = label_encoders['income'].inverse_transform([prediction])[0]
+
+                # (Optional) Show probability if available
+                if hasattr(model, "predict_proba"):
+                    proba = model.predict_proba(input_df)[0]
+                    st.info(f"Class probabilities: <=50K: {proba[0]:.2%}, >50K: {proba[1]:.2%}")
+
                 st.success(f"{name}, your predicted income range is: {label}")
                 st.info(f"You used the {model_choice} model.")
             except Exception as e:
