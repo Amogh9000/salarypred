@@ -36,7 +36,7 @@ project-root/
 1. **Clone this repository:**
     ```
     git clone https://github.com/Amogh9000/salarypred.git
-    cd your-repo
+    cd salarypred
     ```
 
 2. **Install dependencies:**
