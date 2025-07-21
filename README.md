@@ -25,7 +25,9 @@ project-root/
 ├── app.py             # Main Streamlit application
 ├── requirements.txt   # Python dependencies
 ├── adult3.csv         # Default dataset
-└── README.md
+└── README.md          # Project documentation
+
+
 
 
 
