@@ -21,11 +21,13 @@ This repository contains a robust, interactive web application that predicts whe
 
 ###  🏗️ Project Structure
 
-project-root/
-├── app.py             # Main Streamlit application
-├── requirements.txt   # Python dependencies
-├── adult3.csv         # Default dataset
-└── README.md          # Project documentation
+| File/Folder        | Description                |
+| ------------------ | -------------------------- |
+| `app.py`           | Main Streamlit application |
+| `requirements.txt` | Python dependencies        |
+| `adult3.csv`       | Default dataset            |
+| `README.md`        | Project documentation      |
+
 
 
 
