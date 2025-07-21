@@ -92,7 +92,7 @@ This project is open-source.
 
 ## 🤝 Acknowledgements
 
-- UCI Machine Learning Repository – Adult Income Dataset
+- Kaggle – Adult Income Dataset
 - The teams behind Streamlit, scikit-learn, Plotly, and pandas
 - Open-source ML/data science community for tools, resources, and inspiration
 
