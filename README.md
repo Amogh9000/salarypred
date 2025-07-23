@@ -72,7 +72,6 @@ This repository contains a robust, interactive web application that predicts whe
 
 - **Laggy Performance:** Visualizations over large files or training multiple models can make the app temporarily slow. Use streamlined data and adjust checkboxes to view only the necessary charts.
 - **Module Not Found:** If you get errors like `ModuleNotFoundError: No module named 'plotly'`, ensure you installed all packages from `requirements.txt`.
-- **Class Imbalance Note:** The built-in dataset is imbalanced. Most predictions may fall into the "`<=50K`" category unless using class balancing techniques.
 
 ---
 
