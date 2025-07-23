@@ -7,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import accuracy_score, f1_score
 import plotly.express as px
+from imblearn.over_sampling import SMOTE
 
 # --- Page Configuration ---
 st.set_page_config(page_title="AI/ML Salary Predictor", layout="wide")
@@ -32,7 +33,14 @@ def encode_and_train_models(df):
         label_encoders[col] = le
     X = df_encoded.drop("income", axis=1)
     y = df_encoded["income"]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Split first, then apply SMOTE only on the training set
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+    sm = SMOTE(random_state=42)
+    X_train_sm, y_train_sm = sm.fit_resample(X_train, y_train)
+
     models = {
         "Logistic Regression": LogisticRegression(max_iter=1000),
         "Random Forest": RandomForestClassifier(),
@@ -41,7 +49,7 @@ def encode_and_train_models(df):
     results = []
     model_dict = {}
     for name, model in models.items():
-        model.fit(X_train, y_train)
+        model.fit(X_train_sm, y_train_sm)
         y_pred = model.predict(X_test)
         acc = accuracy_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred)
