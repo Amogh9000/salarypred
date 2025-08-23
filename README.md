@@ -85,7 +85,9 @@ This repository contains a robust, interactive web application that predicts whe
 
 ## License
 
-This project is open-source.
+This project is licensed under the MIT License.  
+See the [LICENSE](LICENSE) file for more details.
+
 
 ---
 
