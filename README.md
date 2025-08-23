@@ -4,7 +4,7 @@ This repository contains a robust, interactive web application that predicts whe
 
 ---
 
-## 🚀 Features
+##  Features
 
 - **User-friendly interface** with modern dark theme and responsive design
 - **Upload your dataset** (`.csv`) or use the built-in sample (Adult Income dataset)
@@ -19,7 +19,7 @@ This repository contains a robust, interactive web application that predicts whe
 
 ---
 
-###  🏗️ Project Structure
+###  Project Structure
 
 | File/Folder        | Description                |
 | ------------------ | -------------------------- |
@@ -35,7 +35,7 @@ This repository contains a robust, interactive web application that predicts whe
 
 ---
 
-## 📦 Installation
+##  Installation
 
 1. **Clone this repository:**
     ```
@@ -58,7 +58,7 @@ This repository contains a robust, interactive web application that predicts whe
 
 ---
 
-## 📝 Usage
+##  Usage
 
 - **Preview Default Data:** View summary, stats, and structure of the built-in dataset.
 - **Upload Your Own Data:** Use the upload button to bring in your own CSV with similar columns.
@@ -68,14 +68,14 @@ This repository contains a robust, interactive web application that predicts whe
 
 ---
 
-# ⚠️ Troubleshooting & Tips
+# Troubleshooting & Tips
 
 - **Laggy Performance:** Visualizations over large files or training multiple models can make the app temporarily slow. Use streamlined data and adjust checkboxes to view only the necessary charts.
 - **Module Not Found:** If you get errors like `ModuleNotFoundError: No module named 'plotly'`, ensure you installed all packages from `requirements.txt`.
 
 ---
 
-## 🛠️ Customization
+##  Customization
 
 - **Add Your Own Visuals** by expanding the Plotly plots in `app.py`.
 - **Adjust Model Parameters** for different performance or fairness criteria.
@@ -83,13 +83,13 @@ This repository contains a robust, interactive web application that predicts whe
 
 ---
 
-## 📚 License
+## License
 
 This project is open-source.
 
 ---
 
-## 🤝 Acknowledgements
+##  Acknowledgements
 
 - Kaggle – Adult Income Dataset
 - The teams behind Streamlit, scikit-learn, Plotly, and pandas
