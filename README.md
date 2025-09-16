@@ -6,20 +6,20 @@ This repository contains a robust, interactive web application that predicts whe
 
 ##  Features
 
-- **User-friendly interface** with modern dark theme and responsive design
+- **User-friendly interface** with modern dark/light theme and responsive design
 - **Upload your dataset** (`.csv`) or use the built-in sample (Adult Income dataset)
 - **Live predictions** with custom user input and choice of machine learning model (Logistic Regression, Random Forest, Gradient Boosting)
 - **Interactive visualizations** powered by Plotly for:
-  - Model accuracy and F1 score comparison
+  - Model accuracy, precision, recall and F1 score
   - Income analysis by age, country, occupation
-  - Feature importance and correlation heatmap
-  - Class distribution in the dataset
+  - Income distribution insights
+- **Explainable AI**: SHAP-based feature impact explanations for predictions
 - **Data dictionary** and clear data previews for user guidance
 - **Optimized performance** with smart data/model caching using Streamlit
 
 ---
 
-###  Project Structure
+##  Project Structure
 
 | File/Folder        | Description                |
 | ------------------ | -------------------------- |
@@ -28,33 +28,28 @@ This repository contains a robust, interactive web application that predicts whe
 | `adult3.csv`       | Default dataset            |
 | `README.md`        | Project documentation      |
 
-
-
-
-
-
 ---
 
 ##  Installation
 
 1. **Clone this repository:**
-    ```
+    ```bash
     git clone https://github.com/Amogh9000/salarypred.git
     cd salarypred
     ```
 
 2. **Install dependencies:**
-    ```
+    ```bash
     pip install -r requirements.txt
     ```
 
 3. **Run the Streamlit app:**
-    ```
+    ```bash
     streamlit run app.py
     ```
 
 4. **Open in your browser:**  
-   [localhost:8501](http://localhost:8501) (by default)
+   [http://localhost:8501](http://localhost:8501) (by default)
 
 ---
 
@@ -63,15 +58,15 @@ This repository contains a robust, interactive web application that predicts whe
 - **Preview Default Data:** View summary, stats, and structure of the built-in dataset.
 - **Upload Your Own Data:** Use the upload button to bring in your own CSV with similar columns.
 - **Visualize Insights:** Explore interactive charts explaining model performance and data relationships.
-- **Try Live Prediction:** Enter your own demographic and employment attributes in the "Try it yourself" section and see model predictions in real time.
-- **Select Model:** Choose between Random Forest, Logistic Regression, or Gradient Boosting for your prediction.
+- **Try Live Prediction:** Enter your own demographic and employment attributes in the "Salary Predictor" section and see predictions in real time.
+- **Select Model:** Choose between Random Forest, Logistic Regression, or Gradient Boosting.
 
 ---
 
-# Troubleshooting & Tips
+##  Troubleshooting & Tips
 
-- **Laggy Performance:** Visualizations over large files or training multiple models can make the app temporarily slow. Use streamlined data and adjust checkboxes to view only the necessary charts.
-- **Module Not Found:** If you get errors like `ModuleNotFoundError: No module named 'plotly'`, ensure you installed all packages from `requirements.txt`.
+- **Laggy Performance:** Visualizations over large files or training multiple models can make the app temporarily slow. Use streamlined data and toggle only the necessary charts.
+- **Module Not Found:** If you see `ModuleNotFoundError: No module named 'plotly'`, ensure you installed all packages from `requirements.txt`.
 
 ---
 
@@ -79,24 +74,22 @@ This repository contains a robust, interactive web application that predicts whe
 
 - **Add Your Own Visuals** by expanding the Plotly plots in `app.py`.
 - **Adjust Model Parameters** for different performance or fairness criteria.
-- **Deploy Publicly:** You can use Streamlit Community Cloud, Vercel (with a Python backend), or similar for free hosting and sharing.
+- **Deploy Publicly:** Use Streamlit Community Cloud, Docker, or any cloud hosting platform.
 
 ---
 
-## License
+##  License
 
 This project is licensed under the MIT License.  
 See the [LICENSE](LICENSE) file for more details.
-
 
 ---
 
 ##  Acknowledgements
 
-- Kaggle – Adult Income Dataset
-- The teams behind Streamlit, scikit-learn, Plotly, and pandas
-- Open-source ML/data science community for tools, resources, and inspiration
-
+- UCI/Kaggle – Adult Income Dataset  
+- Streamlit, scikit-learn, Plotly, pandas, imbalanced-learn, SHAP  
+- Open-source ML/data science community  
 
 ---
 
