@@ -1,25 +1,31 @@
 # AI/ML Employee Salary Prediction App
 
-This repository contains a robust, interactive web application that predicts whether an individual's salary exceeds $50,000/year using demographic and job-related data. The project is built with Python and Streamlit, offering a modern, user-friendly interface with rich visualizations and the ability to upload your own datasets.
+This repository contains an interactive, explainable web application that predicts whether an individual's salary exceeds **$50,000/year** using demographic and job-related data.  
+Built with **Python** and **Streamlit**, the app offers a modern, sidebar-driven interface with rich visualizations, model comparisons, and the ability to upload your own datasets.
 
 ---
 
-##  Features
+## Features
 
-- **User-friendly interface** with modern dark/light theme and responsive design
-- **Upload your dataset** (`.csv`) or use the built-in sample (Adult Income dataset)
-- **Live predictions** with custom user input and choice of machine learning model (Logistic Regression, Random Forest, Gradient Boosting)
-- **Interactive visualizations** powered by Plotly for:
-  - Model accuracy, precision, recall and F1 score
+- **Intuitive Sidebar Navigation**
+  - Easily explore sections for:
+    - Model Performance
+    - Visualizations
+    - Job Listings
+    - Salary Predictor
+- **Upload Your Own Dataset** (`.csv`) or use the built-in **Adult Income dataset**
+- **Live Predictions** with custom user input and model selection (Logistic Regression, Random Forest, Gradient Boosting)
+- **Interactive Visualizations** powered by Plotly for:
+  - Accuracy, Precision, Recall, and F1 Score comparison
   - Income analysis by age, country, occupation
-  - Income distribution insights
-- **Explainable AI**: SHAP-based feature impact explanations for predictions
-- **Data dictionary** and clear data previews for user guidance
-- **Optimized performance** with smart data/model caching using Streamlit
+  - Income distribution and class imbalance insights
+- **Explainable AI (XAI):** SHAP-based feature impact explanations for transparent predictions
+- **Optimized Performance** with caching for data and model computations
+- **Dark/Light Theme Support** with responsive design for all screen sizes
 
 ---
 
-##  Project Structure
+## Project Structure
 
 | File/Folder        | Description                |
 | ------------------ | -------------------------- |
@@ -30,7 +36,7 @@ This repository contains a robust, interactive web application that predicts whe
 
 ---
 
-##  Installation
+## Installation
 
 1. **Clone this repository:**
     ```bash
@@ -49,48 +55,61 @@ This repository contains a robust, interactive web application that predicts whe
     ```
 
 4. **Open in your browser:**  
-   [http://localhost:8501](http://localhost:8501) (by default)
+   [http://localhost:8501](http://localhost:8501) (default)
 
 ---
 
-##  Usage
+## Usage Guide
 
-- **Preview Default Data:** View summary, stats, and structure of the built-in dataset.
-- **Upload Your Own Data:** Use the upload button to bring in your own CSV with similar columns.
-- **Visualize Insights:** Explore interactive charts explaining model performance and data relationships.
-- **Try Live Prediction:** Enter your own demographic and employment attributes in the "Salary Predictor" section and see predictions in real time.
-- **Select Model:** Choose between Random Forest, Logistic Regression, or Gradient Boosting.
+**Navigate Using the Sidebar:**  
+Choose from the following sections:
 
----
+- **Model Performance:** Compare accuracy, precision, recall, and F1 scores across models.  
+- **Visualizations:** Explore interactive charts and data distributions.  
+- **Job Listings:** Discover sample job data insights related to income trends.  
+- **Salary Predictor:** Enter your own demographic and job attributes to predict income.  
 
-##  Troubleshooting & Tips
+**Upload Your Own Data:**  
+Bring in your own dataset (with similar columns) for personalized analysis.  
 
-- **Laggy Performance:** Visualizations over large files or training multiple models can make the app temporarily slow. Use streamlined data and toggle only the necessary charts.
-- **Module Not Found:** If you see `ModuleNotFoundError: No module named 'plotly'`, ensure you installed all packages from `requirements.txt`.
-
----
-
-##  Customization
-
-- **Add Your Own Visuals** by expanding the Plotly plots in `app.py`.
-- **Adjust Model Parameters** for different performance or fairness criteria.
-- **Deploy Publicly:** Use Streamlit Community Cloud, Docker, or any cloud hosting platform.
+**Customize Models:**  
+Switch between Random Forest, Logistic Regression, or Gradient Boosting to evaluate and compare model performance.  
 
 ---
 
-##  License
+## Troubleshooting & Tips
 
-This project is licensed under the MIT License.  
-See the [LICENSE](LICENSE) file for more details.
+- **App Feels Slow?**  
+  Large files or multiple model evaluations can cause temporary lag — try smaller samples or fewer visuals.
 
----
-
-##  Acknowledgements
-
-- UCI/Kaggle – Adult Income Dataset  
-- Streamlit, scikit-learn, Plotly, pandas, imbalanced-learn, SHAP  
-- Open-source ML/data science community  
+- **Missing Packages?**  
+  Run `pip install -r requirements.txt` again to fix missing dependencies (e.g., `plotly`, `shap`, etc.).
 
 ---
 
-*Project Date: July 2025*
+## Customization
+
+- Add or modify **Plotly visuals** in `app.py`
+- Tune **model parameters** for better accuracy or interpretability
+- Expand the **Job Listings** section with real APIs or datasets
+- **Deploy publicly** using Streamlit Community Cloud, Docker, or cloud platforms like AWS or Vercel
+
+---
+
+## License
+
+This project is licensed under the **MIT License**.  
+See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgements
+
+- **Dataset:** UCI / Kaggle – Adult Income Dataset  
+- **Libraries:** Streamlit, scikit-learn, Plotly, pandas, imbalanced-learn, SHAP  
+- **Community:** Open-source ML & data science contributors  
+
+---
+
+**Project Date:** July 2025  
+**Updated:** October 2025 (Sidebar & Job Listings Integration)
